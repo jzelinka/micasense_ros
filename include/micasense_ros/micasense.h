@@ -11,6 +11,7 @@
 #include <curlpp/Infos.hpp>
 #include <sensor_msgs/Image.h>
 #include <image_transport/image_transport.h>
+#include <nlohmann/json.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -27,6 +28,7 @@ class Micasense {
         ros::NodeHandle nh;
         image_transport::Publisher image_pub;
         std::stringstream response;
+
         bool camera_connected();
         bool camera_capture();
         bool parse_response();

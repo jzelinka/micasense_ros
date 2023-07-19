@@ -154,7 +154,7 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(micasense src/micasense.cpp src/micasense_node.cpp)
+add_executable(micasense src/micasense.cpp src/micasense_node.cpp include/nlohman/json.hpp)
 target_link_libraries(micasense ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} -L/usr/local/lib -lcurl -lcurlpp)
 
 add_executable(micasense_node src/micasense_node.cpp src/micasense.cpp)

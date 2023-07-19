@@ -63,6 +63,21 @@ bool Micasense::camera_connected() {
 }
 
 bool Micasense::parse_response() {
+    nlohmann::json json = nlohmann::json::parse(this->response.str());
+
+    std::cout << this->response.str() << std::endl;
+
+    std::string cache = json["raw_cache_path"].dump();
+
+    // Alternatively, iterate using begin() and end() methods
+    for (auto it = json["raw_cache_path"].begin(); it != json["raw_cache_path"].end(); ++it) {
+        std::string key = it.key();
+        auto& value = it.value();
+        std::cout << "Key: " << key << ", Value: " << value << std::endl;
+    }
+
+    std::cout << cache << std::endl;
+    return true;
 }
 
 bool Micasense::camera_capture() {
@@ -80,8 +95,6 @@ bool Micasense::camera_capture() {
 
     this->response.str(std::string());
     this->response << response.str();
-
-    std::cout << this->response.str() << std::endl;
 
     return true;
 }
@@ -123,6 +136,7 @@ bool Micasense::test_whole_process() {
 
 
 void Micasense::publish_image(std::string image_path) {
+    // TODO make publish_path on robot and topic
     ROS_INFO("Publishing image. From %s", image_path.c_str());
     cv::Mat image = cv::imread(image_path, cv::IMREAD_COLOR);
 
