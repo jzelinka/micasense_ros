@@ -8,9 +8,11 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  std_msgs
+    cv_bridge
+    image_transport
+    roscpp
+    rospy
+    std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -117,8 +119,9 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include)
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
+    include
+    ${catkin_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -152,10 +155,10 @@ include_directories(
 # )
 
 add_executable(micasense src/micasense.cpp src/micasense_node.cpp)
-target_link_libraries(micasense ${catkin_LIBRARIES} -L/usr/local/lib -lcurl -lcurlpp)
+target_link_libraries(micasense ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} -L/usr/local/lib -lcurl -lcurlpp)
 
 add_executable(micasense_node src/micasense_node.cpp src/micasense.cpp)
-target_link_libraries(micasense_node ${catkin_LIBRARIES} -I/usr/local/include -L/usr/local/lib -lcurl -lcurlpp)
+target_link_libraries(micasense_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} -I/usr/local/include -L/usr/local/lib -lcurl -lcurlpp)
 
 #############
 ## Install ##

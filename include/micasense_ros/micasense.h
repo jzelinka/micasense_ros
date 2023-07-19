@@ -9,6 +9,10 @@
 #include <curlpp/Easy.hpp>
 #include <curlpp/Infos.hpp>
 #include <sensor_msgs/Image.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 
 class Micasense {
@@ -18,10 +22,13 @@ class Micasense {
     private:
         // TODO read the ip from the parameter server
         std::string ip = "http://192.168.1.83";
+        std::string topic_name = "micasense/image";
         ros::NodeHandle nh;
-        ros::Publisher image_pub;
+        image_transport::Publisher image_pub;
         bool camera_connected();
         bool camera_capture();
+
+        void publish_image(std::string image_path);
     
     // check if the camera is connected
     // get parameters as the wanted ip

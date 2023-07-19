@@ -11,13 +11,23 @@ Micasense::Micasense(ros::NodeHandle& nh) {
 
     // prepare publisher
     this->nh = nh;
-    this->image_pub = this->nh.advertise<sensor_msgs::Image>("micasense/image", 1);
+    image_transport::ImageTransport it(this->nh);
+    this->image_pub = it.advertise(this->topic_name, 1);
 
     // start periodical capture
 
     // transport to machine
+    ros::Rate loop_rate(1);
+    while (ros::ok()) {
+        camera_capture();
+        // publish_image("/home/jz/multi_spec/simple_collect/1.tif");
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
 
     // publish to ros topic
+
+    // publish image from file - start publishing tiff images
 }
 
 bool Micasense::camera_connected() {
@@ -49,4 +59,34 @@ bool Micasense::camera_connected() {
     }
 
     return true;
+}
+
+bool Micasense::camera_capture() {
+    // prepare the request
+    curlpp::Cleanup cleanup;
+    curlpp::Easy request;
+    request.setOpt(curlpp::options::Url(this->ip + "/capture?cache_raw=31"));
+    request.perform();
+
+    request.setOpt(curlpp::options::Url(this->ip + "/images/tmp0.tif"));
+    request.perform();
+    
+    // send the request to the camera
+    // process the output
+    return true;
+}
+
+
+void Micasense::publish_image(std::string image_path) {
+    ROS_INFO("Publishing image. From %s", image_path.c_str());
+    cv::Mat image = cv::imread(image_path, cv::IMREAD_COLOR);
+
+    if (!image.data) {
+        ROS_INFO("Could not read image.");
+        return;
+    }
+
+    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
+
+    this->image_pub.publish(msg);
 }
