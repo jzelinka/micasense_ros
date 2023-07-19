@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "catkin_build",
+            "task": "build current package",
+            "group": "build",
+            "problemMatcher": [],
+            "label": "catkin: build current package"
+        },
+        {
+            "label": "Simple test",
+            "type": "shell",
+            "command": "roslaunch micasense_ros test.launch",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}

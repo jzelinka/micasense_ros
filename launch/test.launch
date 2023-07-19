@@ -1,0 +1,5 @@
+<launch>
+    <!-- play -->
+    <node pkg="micasense_ros" type="micasense_node" name="micasense_node" output="screen"/>
+
+</launch>
