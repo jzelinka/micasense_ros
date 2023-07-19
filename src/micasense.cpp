@@ -17,10 +17,14 @@ Micasense::Micasense(ros::NodeHandle& nh) {
     // start periodical capture
 
     // transport to machine
-    ros::Rate loop_rate(1);
+    ros::Rate loop_rate(0.5);
     while (ros::ok()) {
         camera_capture();
         parse_response();
+
+        for (auto it = this->image_paths.begin(); it != this->image_paths.end(); ++it) {
+            test_whole_process(*it);
+        }
 
         ros::spinOnce();
         loop_rate.sleep();
@@ -73,7 +77,13 @@ bool Micasense::parse_response() {
     for (auto it = json["raw_cache_path"].begin(); it != json["raw_cache_path"].end(); ++it) {
         std::string key = it.key();
         auto& value = it.value();
-        std::cout << "Key: " << key << ", Value: " << value << std::endl;
+        // std::cout << "Key: " << key << ", Value: " << value << std::endl;
+        // TODO create some checks
+        this->image_paths[std::stoi(key) - 1] = value;
+    }
+
+    for (auto it = this->image_paths.begin(); it != this->image_paths.end(); ++it) {
+        std::cout << *it << std::endl;
     }
 
     std::cout << cache << std::endl;
@@ -99,7 +109,7 @@ bool Micasense::camera_capture() {
     return true;
 }
 
-bool Micasense::test_whole_process() {
+bool Micasense::test_whole_process(std::string image_path) {
     // prepare the request
     curlpp::Cleanup cleanup;
     curlpp::Easy request;
@@ -109,7 +119,7 @@ bool Micasense::test_whole_process() {
 
     request.setOpt(curlpp::options::WriteStream(&output));
 
-    request.setOpt(curlpp::options::Url("http://192.168.1.83/images/tmp0.tif"));
+    request.setOpt(curlpp::options::Url(this->ip + image_path));
     request.setOpt(curlpp::options::Verbose(true));
 
     request.perform();

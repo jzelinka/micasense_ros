@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Options.hpp>
 #include <curlpp/Easy.hpp>
@@ -29,12 +30,14 @@ class Micasense {
         image_transport::Publisher image_pub;
         std::stringstream response;
 
+        std::vector<std::string> image_paths = std::vector<std::string>(7);
+
         bool camera_connected();
         bool camera_capture();
         bool parse_response();
 
         void publish_image(std::string image_path);
-        bool test_whole_process();
+        bool test_whole_process(std::string image_path);
     
     // check if the camera is connected
     // get parameters as the wanted ip
