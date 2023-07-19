@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 
     ros::init(argc, argv, "micasense");
     ros::NodeHandle nh;
-    Micasense micasense;
+    Micasense micasense(nh);
     ros::spin();
     return 0;
 }
