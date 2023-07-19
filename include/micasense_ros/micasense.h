@@ -2,6 +2,7 @@
 
 #include "ros/ros.h"
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <curlpp/cURLpp.hpp>
@@ -25,10 +26,13 @@ class Micasense {
         std::string topic_name = "micasense/image";
         ros::NodeHandle nh;
         image_transport::Publisher image_pub;
+        std::stringstream response;
         bool camera_connected();
         bool camera_capture();
+        bool parse_response();
 
         void publish_image(std::string image_path);
+        bool test_whole_process();
     
     // check if the camera is connected
     // get parameters as the wanted ip

@@ -20,7 +20,8 @@ Micasense::Micasense(ros::NodeHandle& nh) {
     ros::Rate loop_rate(1);
     while (ros::ok()) {
         camera_capture();
-        // publish_image("/home/jz/multi_spec/simple_collect/1.tif");
+        parse_response();
+
         ros::spinOnce();
         loop_rate.sleep();
     }
@@ -61,15 +62,59 @@ bool Micasense::camera_connected() {
     return true;
 }
 
+bool Micasense::parse_response() {
+}
+
 bool Micasense::camera_capture() {
+    // capture and fill the http response to be parsed using some json library
+    curlpp::Cleanup cleanup;
+    curlpp::Easy request;
+
+    std::stringstream response;
+
+    request.setOpt(curlpp::options::WriteStream(&response));
+
+    request.setOpt(curlpp::options::Url(this->ip + "/capture?block=true&store_capture=false"));
+    request.setOpt(curlpp::options::Verbose(true));
+    request.perform();
+
+    this->response.str(std::string());
+    this->response << response.str();
+
+    std::cout << this->response.str() << std::endl;
+
+    return true;
+}
+
+bool Micasense::test_whole_process() {
     // prepare the request
     curlpp::Cleanup cleanup;
     curlpp::Easy request;
-    request.setOpt(curlpp::options::Url(this->ip + "/capture?cache_raw=31"));
+
+
+    std::stringstream output;
+
+    request.setOpt(curlpp::options::WriteStream(&output));
+
+    request.setOpt(curlpp::options::Url("http://192.168.1.83/images/tmp0.tif"));
+    request.setOpt(curlpp::options::Verbose(true));
+
     request.perform();
 
-    request.setOpt(curlpp::options::Url(this->ip + "/images/tmp0.tif"));
-    request.perform();
+    output >> std::noskipws;
+    std::vector<char> data;
+    std::copy(std::istream_iterator<char>(output), std::istream_iterator<char>(), std::back_inserter(data));
+
+    cv::Mat image = cv::imdecode(cv::Mat(data), cv::IMREAD_COLOR);
+
+    if (!image.data) {
+        ROS_INFO("Could not read image.");
+        return false;
+    }
+
+    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
+
+    this->image_pub.publish(msg);
     
     // send the request to the camera
     // process the output
