@@ -17,6 +17,15 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+static const std::map<int, std::string> CHANNEL_NUM_TO_NAME = {
+    {0, "r"},
+    {1, "g"},
+    {2, "b"},
+    {3, "nir"},
+    {4, "ir"},
+    {5, "rededge"},
+    {6, "thermal"},
+};
 
 class Micasense {
     public:
@@ -30,15 +39,17 @@ class Micasense {
         image_transport::Publisher image_pub;
         std::stringstream response;
 
+        std::vector<image_transport::Publisher> image_pubs = std::vector<image_transport::Publisher>(7);
         std::vector<std::string> image_paths = std::vector<std::string>(7);
 
         bool camera_connected();
         bool camera_capture();
         bool parse_response();
 
-        void publish_image(std::string image_path);
+        void publish_image(std::string image_path, unsigned int position);
         bool test_whole_process(std::string image_path);
-    
+        std::string pos_to_channel_name(unsigned int position);
+        bool pos_valid(unsigned int position);
     // check if the camera is connected
     // get parameters as the wanted ip
     // if connected then start receiving images
