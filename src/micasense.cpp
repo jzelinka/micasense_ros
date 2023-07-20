@@ -1,11 +1,16 @@
 #include "micasense_ros/micasense.h"
 
-Micasense::Micasense(ros::NodeHandle& nh) {
+Micasense::Micasense(ros::NodeHandle& nh, ros::NodeHandle& pnh) {
     ROS_INFO("Micasense constructor.");
+
+    this->nh = nh;
+    this->pnh = pnh;
+
+    this->params = load_params(nh, pnh);
 
     // test if camera connected
     if (!camera_connected()) {
-        ROS_INFO("Shutting down node, camera not reachable on %s.", this->ip.c_str());
+        ROS_INFO("Shutting down node, camera not reachable on %s.", this->params.get_ip().c_str());
         ros::shutdown();
     }
 
@@ -19,37 +24,40 @@ Micasense::Micasense(ros::NodeHandle& nh) {
 
     this->image_pub = it.advertise(this->topic_name, 1);
 
-    // start periodical capture
-    int start;
-
-    // transport to machine
-    ros::Rate loop_rate(0.5);
+    ros::Rate loop_rate(2.0);
     while (ros::ok()) {
-        ROS_INFO("cycle.");
-        start = clock();
+        ROS_INFO("Capturing.");
         camera_capture();
-        std::cout << "capture: " << clock() - start << std::endl;
-        start = clock();
         parse_response();
-        std::cout << "parsing: " << clock() - start << std::endl;
 
-        start = clock();
         for (size_t i = 0; i < this->image_paths.size(); i++) {
             publish_image(this->image_paths[i], i);
         }
-        std::cout << "publishing: " << clock() - start << std::endl;
 
         ros::spinOnce();
         loop_rate.sleep();
     }
+}
 
-    // publish to ros topic
+MicasenseParams Micasense::load_params(ros::NodeHandle& nh, ros::NodeHandle& pnh) {
+    MicasenseParams params;
 
-    // publish image from file - start publishing tiff images
+    ROS_INFO("loading params");
+    if (!pnh.getParam("ip", params.ip)) {
+        params.ip = "192.168.1.83";
+    }
+
+    pnh.getParam("channel_bit_mask", params.channel_bit_mask);
+
+    std::cout << "ip: " << params.get_ip() << std::endl;
+    std::cout << "bit_mask: " << params.channel_bit_mask << std::endl;
+
+    params.assert_valid();
+    return params;
 }
 
 bool Micasense::camera_connected() {
-    if (this->ip == "") {
+    if (this->params.get_ip() == "") {
         ROS_INFO("No IP address provided.");
         return false;
     }
@@ -57,7 +65,7 @@ bool Micasense::camera_connected() {
     try {
         curlpp::Cleanup cleanup;
         curlpp::Easy request;
-        request.setOpt(curlpp::options::Url(this->ip));
+        request.setOpt(curlpp::options::Url(this->params.get_ip()));
 
         request.setOpt(curlpp::options::Timeout(1));
         std::ostringstream nullStream;
@@ -104,8 +112,10 @@ bool Micasense::camera_capture() {
 
     request.setOpt(curlpp::options::WriteStream(&response));
 
-    request.setOpt(curlpp::options::Url(this->ip + "/capture?block=true&store_capture=false"));
-    // request.setOpt(curlpp::options::Verbose(true));
+    std::string url = this->params.get_ip() + "/capture?block=true&store_capture=false&cache_raw=" + std::to_string(this->params.channel_bit_mask);
+    std::cout << "url: " << url << std::endl;
+
+    request.setOpt(curlpp::options::Url(url));
     request.perform();
 
     this->response.str(std::string());
@@ -123,8 +133,7 @@ bool Micasense::test_whole_process(std::string image_path) {
 
     request.setOpt(curlpp::options::WriteStream(&output));
 
-    request.setOpt(curlpp::options::Url(this->ip + image_path));
-    // request.setOpt(curlpp::options::Verbose(true));
+    request.setOpt(curlpp::options::Url(this->params.get_ip() + image_path));
 
     request.perform();
 
@@ -150,24 +159,35 @@ bool Micasense::test_whole_process(std::string image_path) {
 
 
 void Micasense::publish_image(std::string image_path, unsigned int position) {
-    // prepare the request
     curlpp::Cleanup cleanup;
     curlpp::Easy request;
 
-    std::stringstream output;
+    if (image_path == "") {
+        return;
+    }
 
-    request.setOpt(curlpp::options::WriteStream(&output));
+    std::string tmp_response_file = "/tmp/response.tif";
 
-    request.setOpt(curlpp::options::Url(this->ip + image_path));
-    // request.setOpt(curlpp::options::Verbose(true));
+    int start;
+    if (this->show_timer) start = clock();
+    std::ofstream outputFile(tmp_response_file, std::ios::binary);
+
+    // Set the output stream to the file stream
+    request.setOpt(curlpp::options::WriteStream(&outputFile));
+
+    request.setOpt(curlpp::options::Url(this->params.get_ip() + image_path));
 
     request.perform();
 
-    output >> std::noskipws;
-    std::vector<char> data;
-    std::copy(std::istream_iterator<char>(output), std::istream_iterator<char>(), std::back_inserter(data));
+    outputFile.close();
+    if (this->show_timer) std::cout << "downloading: " << clock() - start << std::endl;
 
-    cv::Mat image = cv::imdecode(cv::Mat(data), cv::IMREAD_COLOR);
+    if (this->show_timer) start = clock();
+
+
+    cv::Mat image = cv::imread(tmp_response_file, cv::IMREAD_COLOR);
+    if (this->show_timer) std::cout << "imdecode: " << clock() - start << std::endl;
+    if (this->show_timer) start = clock();
 
     if (!image.data) {
         ROS_WARN("Could not read image.");
@@ -180,6 +200,7 @@ void Micasense::publish_image(std::string image_path, unsigned int position) {
     } else {
         ROS_WARN("Invalid index of multispectral camera's channel.");
     }
+    if (this->show_timer) std::cout << "publishing: " << clock() - start << std::endl;
 }
 
 std::string Micasense::pos_to_channel_name(unsigned int position) {
@@ -192,6 +213,7 @@ std::string Micasense::pos_to_channel_name(unsigned int position) {
     if (it != CHANNEL_NUM_TO_NAME.end()) {
         return it->second;
     }     
+    return "";
 }
 
 bool Micasense::pos_valid(unsigned int position) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ros/ros.h"
+#include "micasense_ros/micasense_params.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -18,29 +19,35 @@
 #include <opencv2/highgui/highgui.hpp>
 
 static const std::map<int, std::string> CHANNEL_NUM_TO_NAME = {
-    {0, "r"},
-    {1, "g"},
-    {2, "b"},
-    {3, "nir"},
-    {4, "ir"},
-    {5, "rededge"},
+    {0, "blue"},
+    {1, "green"},
+    {2, "red"},
+    {3, "red_edge"},
+    {4, "near_infrared"},
+    {5, "panchromatic"},
     {6, "thermal"},
 };
 
 class Micasense {
     public:
-        Micasense(ros::NodeHandle& nh);
+        Micasense(ros::NodeHandle& nh, ros::NodeHandle& pnh);
     
     private:
         // TODO read the ip from the parameter server
-        std::string ip = "http://192.168.1.83";
+        MicasenseParams params;
+        // std::string ip = "http://192.168.1.83";
+        static MicasenseParams load_params(ros::NodeHandle& nh, ros::NodeHandle& pnh);
         std::string topic_name = "micasense/image";
         ros::NodeHandle nh;
+        ros::NodeHandle pnh;
         image_transport::Publisher image_pub;
         std::stringstream response;
 
+        bool show_timer = false;
+
         std::vector<image_transport::Publisher> image_pubs = std::vector<image_transport::Publisher>(7);
         std::vector<std::string> image_paths = std::vector<std::string>(7);
+        std::vector<std::vector<char>> image_datas = std::vector<std::vector<char>>(7);
 
         bool camera_connected();
         bool camera_capture();
