@@ -35,7 +35,6 @@ class Micasense {
     private:
         // TODO read the ip from the parameter server
         MicasenseParams params;
-        // std::string ip = "http://192.168.1.83";
         static MicasenseParams load_params(ros::NodeHandle& nh, ros::NodeHandle& pnh);
         std::string topic_name = "micasense/image";
         ros::NodeHandle nh;
@@ -57,8 +56,4 @@ class Micasense {
         bool test_whole_process(std::string image_path);
         std::string pos_to_channel_name(unsigned int position);
         bool pos_valid(unsigned int position);
-    // check if the camera is connected
-    // get parameters as the wanted ip
-    // if connected then start receiving images
-    // stream the images to the ros topic
 };

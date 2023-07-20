@@ -3,7 +3,7 @@
     <node pkg="micasense_ros" type="micasense_node" name="micasense_node" output="screen">
         <param name="simple_param" value="20" type="int"/>
         <param name="ip" value="192.168.1.83" type="string"/>
-        <param name="channel_bit_mask" value="63" type="int"/>
+        <param name="channel_bit_mask" value="1" type="int"/>
     </node>
 
     <!-- image view -->

@@ -14,12 +14,12 @@ Micasense::Micasense(ros::NodeHandle& nh, ros::NodeHandle& pnh) {
         ros::shutdown();
     }
 
-    // prepare publisher
-    this->nh = nh;
     image_transport::ImageTransport it(this->nh);
 
     for (size_t i = 0; i < this->image_pubs.size(); i++) {
-        this->image_pubs[i] = it.advertise(this->topic_name + "_" + pos_to_channel_name(i), 1);
+        if (this->params.channel_bit_mask & (1 << i)) {
+            this->image_pubs[i] = it.advertise(this->topic_name + "_" + pos_to_channel_name(i), 1);
+        }
     }
 
     this->image_pub = it.advertise(this->topic_name, 1);
