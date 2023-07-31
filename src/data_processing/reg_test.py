@@ -30,11 +30,13 @@ gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 gray3 = cv2.cvtColor(img3, cv2.COLOR_BGR2GRAY)
 cc, warp = cv2.findTransformECC(gray1, gray2, init_warp, warp_mode, criteria)
+print(warp)
 
 # write blended warp and diff
 img2_aligned = cv2.warpAffine(img2, warp, (w, h), flags=cv2.WARP_INVERSE_MAP)
 
 cc, warp = cv2.findTransformECC(gray1, gray3, init_warp, warp_mode, criteria)
+print(warp)
 img3_aligned = cv2.warpAffine(img3, warp, (w, h), flags=cv2.WARP_INVERSE_MAP)
 
 """Pyramid ECC algorithm"""
@@ -58,4 +60,4 @@ test_rgb[:, :, 1] = img2[:, :,0]
 test_rgb[:, :, 2] = img1[:, :,0]
 
 axes[1].imshow(test_rgb)
-plt.savefig("before_and_after.pdf", dpi=300)
+plt.savefig("output/before_and_after.pdf", dpi=300)

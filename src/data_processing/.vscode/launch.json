@@ -13,6 +13,14 @@
             "justMyCode": true
         },
         {
+            "name": "Python: Visualize",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/jz/rds_ws/src/micasense_ros/src/data_processing/visualize.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python: Test capture",
             "type": "python",
             "request": "launch",

@@ -16,11 +16,13 @@ class Capture:
                 raise TypeError("All images must be of class image.Image")
         self.images = images
 
+        print("Aligning images")
         warp_mats = imageutils.align_capture(self)
-        crop_region = imageutils.get_cropped_region(self)
+        crop_region = imageutils.get_cropped_region(self, warp_mats)
 
         self.aligned_image = imageutils.aligned_capture(self, crop_region, warp_mats)
-    
+        self.channels = len(self.images)
+
     @classmethod
     def from_file_list(cls, file_list):
         images = []
@@ -33,9 +35,17 @@ class Capture:
             else:
                 images.append(image.Image(fname))
         return cls(images)
+    
+    def get_band_names(self):
+        return [img.band_name.lower() for img in self.images]
+    
+    def is_rgb(self):
+        band_names = self.get_band_names()
+        return "red".lower() in band_names and "green".lower() in band_names and "blue".lower() in band_names
 
 if __name__ == "__main__":
-    glob_list = sorted(glob.glob("data/000/IMG_0006_*.tif"))
+    glob_list = sorted(glob.glob("data/000/IMG_0006_*.tif"))[:5]
+    # glob_list = sorted(glob.glob("data/000/IMG_0006_*.tif"))[:]
     # test the alignment
 
     capture = Capture.from_file_list(glob_list)
