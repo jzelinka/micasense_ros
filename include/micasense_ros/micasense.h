@@ -33,7 +33,6 @@ class Micasense {
         Micasense(ros::NodeHandle& nh, ros::NodeHandle& pnh);
     
     private:
-        // TODO read the ip from the parameter server
         MicasenseParams params;
         static MicasenseParams load_params(ros::NodeHandle& nh, ros::NodeHandle& pnh);
         std::string topic_name = "micasense/image";
@@ -56,4 +55,6 @@ class Micasense {
         bool test_whole_process(std::string image_path);
         std::string pos_to_channel_name(unsigned int position);
         bool pos_valid(unsigned int position);
+
+        // TODO check the calibration
 };

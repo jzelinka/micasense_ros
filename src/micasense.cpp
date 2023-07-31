@@ -8,7 +8,6 @@ Micasense::Micasense(ros::NodeHandle& nh, ros::NodeHandle& pnh) {
 
     this->params = load_params(nh, pnh);
 
-    // test if camera connected
     if (!camera_connected()) {
         ROS_INFO("Shutting down node, camera not reachable on %s.", this->params.get_ip().c_str());
         ros::shutdown();
@@ -96,7 +95,11 @@ bool Micasense::parse_response() {
     for (auto it = json["raw_cache_path"].begin(); it != json["raw_cache_path"].end(); ++it) {
         std::string key = it.key();
         auto& value = it.value();
-        // TODO create some checks
+        if (std::stoi(key) - 1 >= this->image_paths.size()) {
+            ROS_WARN("Invalid index of multispectral camera's channel.");
+            return false;
+        }
+        
         this->image_paths[std::stoi(key) - 1] = value;
     }
 
@@ -151,9 +154,7 @@ bool Micasense::test_whole_process(std::string image_path) {
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
 
     this->image_pub.publish(msg);
-    
-    // send the request to the camera
-    // process the output
+
     return true;
 }
 
