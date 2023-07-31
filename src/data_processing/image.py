@@ -5,12 +5,13 @@ import metadata
 class Image:
     def __init__(self, fname) -> None:
         self.fname = fname
-        self.image = cv2.imread(fname)
+        self.image = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
         self.shape = self.image.shape
         self.metadata = metadata.Metadata(fname)
 
         self.band_index = self.metadata.band_index()
         self.band_name = self.metadata.band_name()
+
 
     
     def __str__(self) -> str:

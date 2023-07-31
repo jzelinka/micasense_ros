@@ -15,7 +15,11 @@ class Capture:
             if not isinstance(img, image.Image):
                 raise TypeError("All images must be of class image.Image")
         self.images = images
-        pass
+
+        warp_mats = imageutils.align_capture(self)
+        crop_region = imageutils.get_cropped_region(self)
+
+        self.aligned_image = imageutils.aligned_capture(self, crop_region, warp_mats)
     
     @classmethod
     def from_file_list(cls, file_list):
