@@ -21,10 +21,10 @@
             "justMyCode": true
         },
         {
-            "name": "Python: Test capture",
+            "name": "Python: Run tests",
             "type": "python",
             "request": "launch",
-            "program": "/home/jz/rds_ws/src/micasense_ros/src/data_processing/capture.py",
+            "program": "/home/jz/rds_ws/src/micasense_ros/src/data_processing/tests.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }

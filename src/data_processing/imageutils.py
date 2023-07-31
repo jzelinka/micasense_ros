@@ -25,9 +25,7 @@ def align_capture(capture, ref_idx=0):
 def determine_roi(aligned_img):
     h, w  = aligned_img.shape
     x, y = 0, 0
-    # TODO find the biggest crop region
     shape_y, shape_x = aligned_img.shape
-    print(shape_x, shape_y)
 
     # crop right edge
     right_x = 0
@@ -91,8 +89,4 @@ def aligned_capture(capture, warp_mats):
             final.append(img.image)
         else:
             final.append(cv2.warpAffine(img.image, warp, (w, h), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP))
-            # coordinates = cv2.findNonZero(final[-1].copy())
-            # x,y,w,h = cv2.boundingRect(coordinates)
-            # x, y, w, h = cv2.boundingRect(coordinates)
-            # print(x, y, w, h)
     return final

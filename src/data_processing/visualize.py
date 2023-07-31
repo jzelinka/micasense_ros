@@ -67,7 +67,7 @@ if __name__ == "__main__":
     show_plot = False
     save_plot = True
 
-    glob_list = sorted(glob.glob("data/000/IMG_0005_*.tif"))[:3]
+    glob_list = sorted(glob.glob("data/000/IMG_0001_*.tif"))[:3]
     capture = capture.Capture.from_file_list(glob_list)
 
     # visualize_aligned(capture, show_plot, save_plot)

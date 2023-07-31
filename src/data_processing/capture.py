@@ -53,8 +53,7 @@ class Capture:
         x, y, w, h = crop_region
         print("Cropping to region:", crop_region)
         for idx, img in enumerate(self.aligned_images):
-            # self.aligned_images[idx] = img[y:y+h, x:x+w]
-            self.aligned_images[idx] = img[40:1500, x:x + w]
+            self.aligned_images[idx] = img[y:y+h, x:x + w]
 
             print(self.aligned_images[idx].shape)
 
