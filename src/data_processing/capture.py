@@ -20,6 +20,7 @@ class Capture:
         warp_mats = imageutils.align_capture(self)
         crop_region = imageutils.get_cropped_region(self, warp_mats)
 
+        self.band_names = self.get_band_names()
         self.aligned_image = imageutils.aligned_capture(self, crop_region, warp_mats)
         self.channels = len(self.images)
 
@@ -38,6 +39,9 @@ class Capture:
     
     def get_band_names(self):
         return [img.band_name.lower() for img in self.images]
+
+    def band_index(self, band_name):
+        return self.get_band_names().index(band_name.lower())
     
     def is_rgb(self):
         band_names = self.get_band_names()
