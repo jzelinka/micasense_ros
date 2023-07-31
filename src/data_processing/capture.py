@@ -1,4 +1,3 @@
-# class for handling one capture of the camera
 import imageutils
 import image
 
@@ -18,10 +17,13 @@ class Capture:
 
         print("Aligning images")
         warp_mats = imageutils.align_capture(self)
-        crop_region = imageutils.get_cropped_region(self, warp_mats)
 
         self.band_names = self.get_band_names()
-        self.aligned_image = imageutils.aligned_capture(self, crop_region, warp_mats)
+        self.aligned_images = imageutils.aligned_capture(self, warp_mats)
+
+        crop_region = imageutils.get_cropped_region(self)
+        self.crop_aligned(crop_region)
+
         self.channels = len(self.images)
 
     @classmethod
@@ -46,6 +48,15 @@ class Capture:
     def is_rgb(self):
         band_names = self.get_band_names()
         return "red".lower() in band_names and "green".lower() in band_names and "blue".lower() in band_names
+    
+    def crop_aligned(self, crop_region):
+        x, y, w, h = crop_region
+        print("Cropping to region:", crop_region)
+        for idx, img in enumerate(self.aligned_images):
+            # self.aligned_images[idx] = img[y:y+h, x:x+w]
+            self.aligned_images[idx] = img[40:1500, x:x + w]
+
+            print(self.aligned_images[idx].shape)
 
 if __name__ == "__main__":
     glob_list = sorted(glob.glob("data/000/IMG_0006_*.tif"))[:5]

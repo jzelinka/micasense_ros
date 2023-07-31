@@ -5,8 +5,8 @@ import metadata
 class Image:
     def __init__(self, fname) -> None:
         self.fname = fname
-        # self.image = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
-        self.image = cv2.cvtColor(cv2.imread(fname), cv2.COLOR_BGR2GRAY)
+        self.image = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
+        # self.image = cv2.cvtColor(cv2.imread(fname), cv2.COLOR_BGR2GRAY)
         self.shape = self.image.shape
         self.metadata = metadata.Metadata(fname)
 
