@@ -16,7 +16,8 @@ class Capture:
         self.images = images
 
         print("Aligning images")
-        warp_mats = imageutils.align_capture(self)
+        warp_mats, self.ref_idx = imageutils.align_capture(self)
+        self.warp_mats = warp_mats
 
         self.band_names = self.get_band_names()
         self.aligned_images = imageutils.aligned_capture(self, warp_mats)
@@ -39,6 +40,13 @@ class Capture:
                 images.append(image.Image(fname))
         return cls(images)
     
+    def use_outside_warp(self, warp_mats):
+        if len(warp_mats) != len(self.images):
+            raise ValueError("warp_mats must be of same length as images")
+        self.aligned_images = imageutils.aligned_capture(self, warp_mats)
+        crop_region = imageutils.get_cropped_region(self)
+        self.crop_aligned(crop_region)
+    
     def get_band_names(self):
         return [img.band_name.lower() for img in self.images]
 
@@ -51,16 +59,15 @@ class Capture:
     
     def crop_aligned(self, crop_region):
         x, y, w, h = crop_region
+        target_shape = self.images[self.ref_inx].image.shape
         print("Cropping to region:", crop_region)
         for idx, img in enumerate(self.aligned_images):
             self.aligned_images[idx] = img[y:y+h, x:x + w]
-
+            self.aligned_images[idx] = cv2.resize(self.aligned_images[idx], target_shape[::-1])
             print(self.aligned_images[idx].shape)
 
 if __name__ == "__main__":
     glob_list = sorted(glob.glob("data/000/IMG_0006_*.tif"))[:5]
-    # glob_list = sorted(glob.glob("data/000/IMG_0006_*.tif"))[:]
-    # test the alignment
 
     capture = Capture.from_file_list(glob_list)
 

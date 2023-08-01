@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 
 location = "/home/jz/multi_spec/initial_collect_at_kn/0006SET/000"
 
-img1 = cv2.imread(os.path.join(location, "IMG_0006_1.tif"))
+img1 = cv2.imread(os.path.join(location, "IMG_0006_6.tif"))
 img2 = cv2.imread(os.path.join(location, "IMG_0006_2.tif"))
-img3 = cv2.imread(os.path.join(location, "IMG_0006_3.tif"))
+img3 = cv2.imread(os.path.join(location, "IMG_0006_1.tif"))
 
 h, w = img1.shape[:2]
 
@@ -50,14 +50,19 @@ fig, axes = plt.subplots(1, 2)
 axes[0].set_title("Red-Green-Blue Composite")
 axes[1].set_title("Color Infrared (CIR) Composite")
 
+print(img3_aligned.shape)
+# axes[0].imshow(img3_aligned)
+# axes[1].imshow(img3)
+
 test_rgb[:, :, 0] = img3_aligned[:, :,0]
 test_rgb[:, :, 1] = img2_aligned[:, :,0]
 test_rgb[:, :, 2] = img1[:, :,0]
 
 axes[0].imshow(test_rgb)
-test_rgb[:, :, 0] = img3[:, :,0]
-test_rgb[:, :, 1] = img2[:, :,0]
-test_rgb[:, :, 2] = img1[:, :,0]
+
+# test_rgb[:, :, 0] = img3[:, :,0]
+# test_rgb[:, :, 1] = img2[:, :,0]
+# test_rgb[:, :, 2] = img1[:, :,0]
 
 axes[1].imshow(test_rgb)
 plt.savefig("output/before_and_after.pdf", dpi=300)

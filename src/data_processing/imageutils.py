@@ -7,6 +7,7 @@ def align_capture(capture, ref_idx=0):
     warp_mats = []
 
     init_warp = np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float32)
+    # init_warp = np.eye(3, dtype=np.float32)
     n_iters = 100
     e_thresh = 1e-6
     warp_mode = cv2.MOTION_TRANSLATION
@@ -20,7 +21,7 @@ def align_capture(capture, ref_idx=0):
             _, warp = cv2.findTransformECC(capture.images[ref_idx].image, img.image, init_warp, warp_mode, criteria)
             warp_mats.append(warp.copy())
 
-    return warp_mats
+    return warp_mats, ref_idx
 
 def determine_roi(aligned_img):
     h, w  = aligned_img.shape
@@ -82,7 +83,7 @@ def get_cropped_region(capture):
     return x, y, w, h
 
 def aligned_capture(capture, warp_mats):
-    h, w = capture.images[0].image.shape
+    h, w = capture.images[capture.ref_idx].image.shape
     final = []
     for warp, img in zip(warp_mats, capture.images):
         if warp is None:
