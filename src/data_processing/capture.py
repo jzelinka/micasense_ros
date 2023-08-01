@@ -6,14 +6,19 @@ import numpy as np
 import os
 import glob
 
+POSSIBLE_BAND_NAMES = ['blue', 'green', 'red', 'nir', 'red edge', 'panchro', 'lwir']
 
 class Capture:
     def __init__(self, images) -> None:
         # test if all the images are of class image
+        assert len(images) > 0
+
         for img in images:
             if not isinstance(img, image.Image):
                 raise TypeError("All images must be of class image.Image")
         self.images = images
+
+        self.cap_name = get_prefix(self.images[0].fname)
 
         print("Aligning images")
         warp_mats, self.ref_idx = imageutils.align_capture(self)
@@ -59,15 +64,22 @@ class Capture:
     
     def crop_aligned(self, crop_region):
         x, y, w, h = crop_region
-        target_shape = self.images[self.ref_inx].image.shape
+        target_shape = self.images[self.ref_idx].image.shape
         print("Cropping to region:", crop_region)
         for idx, img in enumerate(self.aligned_images):
             self.aligned_images[idx] = img[y:y+h, x:x + w]
             self.aligned_images[idx] = cv2.resize(self.aligned_images[idx], target_shape[::-1])
             print(self.aligned_images[idx].shape)
 
+def get_prefix(fname):
+    return "_".join(fname.split("_")[:-1])
+
+def band_name_possible(band_name):
+    return band_name.lower() in POSSIBLE_BAND_NAMES
+
+
 if __name__ == "__main__":
-    glob_list = sorted(glob.glob("data/000/IMG_0006_*.tif"))[:5]
+    glob_list = sorted(glob.glob("data/000/IMG_0006_*.tif"))[:7]
 
     capture = Capture.from_file_list(glob_list)
 

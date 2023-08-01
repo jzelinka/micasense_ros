@@ -18,7 +18,7 @@ def visualize_aligned(cap: capture.Capture, show_plot=True, save_plot=False, sav
     if show_plot:
         plt.show()
 
-def visualize_band_alignment(cap: capture.Capture, vis_band_names, show_plot=True, save_plot=False, save_path="output"):
+def compare_band_alignment(cap: capture.Capture, vis_band_names, show_plot=True, save_plot=False, save_path="output"):
     if len(vis_band_names) != 3:
         raise ValueError("Must visualize exactly 3 bands")
     
@@ -50,27 +50,47 @@ def visualize_band_alignment(cap: capture.Capture, vis_band_names, show_plot=Tru
     if show_plot:
         plt.show()
 
+def visualize_overlay_band_alignment(cap: capture.Capture, vis_band_names, save_path="output"):
+    if len(vis_band_names) != 3:
+        raise ValueError("Must visualize exactly 3 bands")
+
+    bands = [cap.aligned_images[cap.band_index(band_name)] for band_name in vis_band_names]
+
+    assert bands[0].shape == bands[1].shape == bands[2].shape
+    
+    # Merge the three bands into an RGB image
+    rgb_image = cv2.merge(bands)
+
+    # Save the RGB image to a file
+    output_filename = save_path + "/aligned_overlay_" + cap.cap_name + "_" + "_".join(vis_band_names) + ".tif"
+    cv2.imwrite(output_filename, cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR))
+
+
 def save_all(cap: capture.Capture, save_path="output"):
     for idx, img in enumerate(cap.aligned_images):
-        cv2.imwrite("output/aligned_" + cap.band_names[idx] + ".tif", img)
-        print("Saved aligned_" + cap.band_names[idx] + ".tif")
+        cv2.imwrite(save_path + "/aligned_" + cap.images[idx].fname, img)
+        print("Saved aligned_" + cap.images[idx].fname)
 
+
+def compare_overlay_rgb(cap: capture.Capture, show_plot=True, save_plot=False, save_path="output"):
+    if not cap.is_rgb():
+        raise ValueError("Capture must be rgb to visualize this overlay")
+
+    compare_band_alignment(cap, ["red", "green", "blue"], show_plot, save_plot, save_path)
 
 def visualize_overlay_rgb(cap: capture.Capture, show_plot=True, save_plot=False, save_path="output"):
     if not cap.is_rgb():
         raise ValueError("Capture must be rgb to visualize this overlay")
 
-    visualize_band_alignment(cap, ["red", "green", "blue"], show_plot, save_plot, save_path)
+    visualize_overlay_band_alignment(cap, ["red", "green", "blue"], save_path)
 
 
 if __name__ == "__main__":
     show_plot = False
     save_plot = True
 
-    glob_list = sorted(glob.glob("data/000/IMG_0004_*.tif"))[:6]
+    glob_list = sorted(glob.glob("data/000/IMG_0004_*.tif"))[:5]
     capture = capture.Capture.from_file_list(glob_list)
 
-    # visualize_aligned(capture, show_plot, save_plot)
-    visualize_overlay_rgb(capture, show_plot, save_plot)
-    # visualize_band_alignment(capture, ["nir", "red", "green"], show_plot, save_plot)
+    compare_overlay_rgb(capture, show_plot, save_plot)
     save_all(capture)
