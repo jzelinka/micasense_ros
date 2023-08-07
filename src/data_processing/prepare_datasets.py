@@ -30,6 +30,7 @@ if __name__=="__main__":
         assert len(files) == args.n
 
         capture_now = capture.Capture.from_file_list(files)
+
         visualize.save_all(capture_now, save_path=str(output_dir))
         visualize.visualize_overlay_rgb(capture_now, save_path=str(output_dir))
-        visualize.visualize_overlay_band_alignment(capture_now, ["nir", "red edge", "green"])
+        visualize.visualize_overlay_band_alignment(capture_now, ["nir", "red edge", "green"], save_path=str(output_dir))

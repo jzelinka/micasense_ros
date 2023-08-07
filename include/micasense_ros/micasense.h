@@ -38,7 +38,7 @@ class Micasense {
         std::string topic_name = "micasense/image";
         ros::NodeHandle nh;
         ros::NodeHandle pnh;
-        image_transport::Publisher image_pub;
+        // image_transport::Publisher image_pub;
         std::stringstream response;
 
         bool show_timer = false;
@@ -52,7 +52,7 @@ class Micasense {
         bool parse_response();
 
         void publish_image(std::string image_path, unsigned int position);
-        bool test_whole_process(std::string image_path);
+        // bool test_whole_process(std::string image_path);
         std::string pos_to_channel_name(unsigned int position);
         bool pos_valid(unsigned int position);
 

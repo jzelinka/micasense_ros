@@ -1,0 +1,8 @@
+<launch>
+    <!-- driver -->
+    <node pkg="rosbag" type="record" name="rosbag_micasense" output="screen"
+        args="record -o /home/jz/output
+/micasense/image_panchromatic/compressed
+        " />
+
+</launch>

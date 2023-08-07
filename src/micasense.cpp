@@ -16,12 +16,12 @@ Micasense::Micasense(ros::NodeHandle& nh, ros::NodeHandle& pnh) {
     image_transport::ImageTransport it(this->nh);
 
     for (size_t i = 0; i < this->image_pubs.size(); i++) {
-        if (this->params.channel_bit_mask & (1 << i)) {
+        if (this->params.get_channel_bit_mask() & (1 << i)) {
             this->image_pubs[i] = it.advertise(this->topic_name + "_" + pos_to_channel_name(i), 1);
         }
     }
 
-    this->image_pub = it.advertise(this->topic_name, 1);
+    // this->image_pub = it.advertise(this->topic_name, 1);
 
     ros::Rate loop_rate(2.0);
     while (ros::ok()) {
@@ -46,10 +46,28 @@ MicasenseParams Micasense::load_params(ros::NodeHandle& nh, ros::NodeHandle& pnh
         params.ip = "192.168.1.83";
     }
 
-    pnh.getParam("channel_bit_mask", params.channel_bit_mask);
+    // get all the params
+    pnh.getParam("use_red", params.use_red);
+    pnh.getParam("use_blue", params.use_blue);
+    pnh.getParam("use_green", params.use_green);
+    pnh.getParam("use_red_edge", params.use_red_edge);
+    pnh.getParam("use_near_infrared", params.use_near_infrared);
+    pnh.getParam("use_panchromatic", params.use_panchromatic);
+    pnh.getParam("use_thermal", params.use_thermal);
+
+    int tmp_bit_mask = 0;
+    if (params.use_red) tmp_bit_mask |= 1 << 2;
+    if (params.use_blue) tmp_bit_mask |= 1 << 0;
+    if (params.use_green) tmp_bit_mask |= 1 << 1;
+    if (params.use_red_edge) tmp_bit_mask |= 1 << 3;
+    if (params.use_near_infrared) tmp_bit_mask |= 1 << 4;
+    if (params.use_panchromatic) tmp_bit_mask |= 1 << 5;
+    if (params.use_thermal) tmp_bit_mask |= 1 << 6;
+
+    params.set_channel_bit_mask(tmp_bit_mask);
 
     std::cout << "ip: " << params.get_ip() << std::endl;
-    std::cout << "bit_mask: " << params.channel_bit_mask << std::endl;
+    std::cout << "bit_mask: " << params.get_channel_bit_mask() << std::endl;
 
     params.assert_valid();
     return params;
@@ -115,7 +133,7 @@ bool Micasense::camera_capture() {
 
     request.setOpt(curlpp::options::WriteStream(&response));
 
-    std::string url = this->params.get_ip() + "/capture?block=true&store_capture=false&cache_raw=" + std::to_string(this->params.channel_bit_mask);
+    std::string url = this->params.get_ip() + "/capture?block=true&store_capture=false&cache_raw=" + std::to_string(this->params.get_channel_bit_mask());
     std::cout << "url: " << url << std::endl;
 
     request.setOpt(curlpp::options::Url(url));
@@ -127,36 +145,36 @@ bool Micasense::camera_capture() {
     return true;
 }
 
-bool Micasense::test_whole_process(std::string image_path) {
-    // prepare the request
-    curlpp::Cleanup cleanup;
-    curlpp::Easy request;
+// bool Micasense::test_whole_process(std::string image_path) {
+//     // prepare the request
+//     curlpp::Cleanup cleanup;
+//     curlpp::Easy request;
 
-    std::stringstream output;
+//     std::stringstream output;
 
-    request.setOpt(curlpp::options::WriteStream(&output));
+//     request.setOpt(curlpp::options::WriteStream(&output));
 
-    request.setOpt(curlpp::options::Url(this->params.get_ip() + image_path));
+//     request.setOpt(curlpp::options::Url(this->params.get_ip() + image_path));
 
-    request.perform();
+//     request.perform();
 
-    output >> std::noskipws;
-    std::vector<char> data;
-    std::copy(std::istream_iterator<char>(output), std::istream_iterator<char>(), std::back_inserter(data));
+//     output >> std::noskipws;
+//     std::vector<char> data;
+//     std::copy(std::istream_iterator<char>(output), std::istream_iterator<char>(), std::back_inserter(data));
 
-    cv::Mat image = cv::imdecode(cv::Mat(data), cv::IMREAD_COLOR);
+//     cv::Mat image = cv::imdecode(cv::Mat(data), cv::IMREAD_COLOR);
 
-    if (!image.data) {
-        ROS_INFO("Could not read image.");
-        return false;
-    }
+//     if (!image.data) {
+//         ROS_INFO("Could not read image.");
+//         return false;
+//     }
 
-    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
+//     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
 
-    this->image_pub.publish(msg);
+//     this->image_pub.publish(msg);
 
-    return true;
-}
+//     return true;
+// }
 
 
 void Micasense::publish_image(std::string image_path, unsigned int position) {
