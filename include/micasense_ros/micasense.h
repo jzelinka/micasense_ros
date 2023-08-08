@@ -17,6 +17,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <chrono>
 
 static const std::map<int, std::string> CHANNEL_NUM_TO_NAME = {
     {0, "blue"},
@@ -41,7 +42,7 @@ class Micasense {
         // image_transport::Publisher image_pub;
         std::stringstream response;
 
-        bool show_timer = false;
+        bool show_timer = true;
 
         std::vector<image_transport::Publisher> image_pubs = std::vector<image_transport::Publisher>(7);
         std::vector<std::string> image_paths = std::vector<std::string>(7);

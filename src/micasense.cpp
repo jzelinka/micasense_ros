@@ -131,6 +131,8 @@ bool Micasense::camera_capture() {
 
     std::stringstream response;
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     request.setOpt(curlpp::options::WriteStream(&response));
 
     std::string url = this->params.get_ip() + "/capture?block=true&store_capture=false&cache_raw=" + std::to_string(this->params.get_channel_bit_mask());
@@ -141,6 +143,12 @@ bool Micasense::camera_capture() {
 
     this->response.str(std::string());
     this->response << response.str();
+
+    if (this->show_timer) {
+        auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::high_resolution_clock::now() - start);
+        std::cout << "capture and parse json: " << ms_int.count() << std::endl;
+    }
 
     return true;
 }
@@ -175,7 +183,24 @@ bool Micasense::camera_capture() {
 
 //     return true;
 // }
+    // using std::chrono::high_resolution_clock;
+    // using std::chrono::duration_cast;
+    // using std::chrono::duration;
+    // using std::chrono::milliseconds;
 
+    // auto t1 = high_resolution_clock::now();
+    // long_operation();
+    // auto t2 = high_resolution_clock::now();
+
+    // /* Getting number of milliseconds as an integer. */
+    // auto ms_int = duration_cast<milliseconds>(t2 - t1);
+
+    // /* Getting number of milliseconds as a double. */
+    // duration<double, std::milli> ms_double = t2 - t1;
+
+    // std::cout << ms_int.count() << "ms\n";
+    // std::cout << ms_double.count() << "ms\n";
+    // return 0;
 
 void Micasense::publish_image(std::string image_path, unsigned int position) {
     curlpp::Cleanup cleanup;
@@ -187,8 +212,9 @@ void Micasense::publish_image(std::string image_path, unsigned int position) {
 
     std::string tmp_response_file = "/tmp/response.tif";
 
-    int start;
-    if (this->show_timer) start = clock();
+    auto start = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<std::chrono::milliseconds> ms_int;
+    // if (this->show_timer) start = std::chrono::high_resolution_clock::now();
     std::ofstream outputFile(tmp_response_file, std::ios::binary);
 
     // Set the output stream to the file stream
@@ -199,14 +225,23 @@ void Micasense::publish_image(std::string image_path, unsigned int position) {
     request.perform();
 
     outputFile.close();
-    if (this->show_timer) std::cout << "downloading: " << clock() - start << std::endl;
+    if (this->show_timer) {
+        auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::high_resolution_clock::now() - start);
+        std::cout << "downloading: " << ms_int.count() << std::endl;
+    }
 
-    if (this->show_timer) start = clock();
+    if (this->show_timer) start = std::chrono::high_resolution_clock::now();
 
 
     cv::Mat image = cv::imread(tmp_response_file, cv::IMREAD_COLOR);
-    if (this->show_timer) std::cout << "imdecode: " << clock() - start << std::endl;
-    if (this->show_timer) start = clock();
+    if (this->show_timer) {
+        // std::cout << "imdecode: " << std::chrono::high_resolution_clock::now() - start << std::endl;
+        auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::high_resolution_clock::now() - start);
+        std::cout << "imdecode: " << ms_int.count() << std::endl;
+    }
+    if (this->show_timer) start = std::chrono::high_resolution_clock::now();
 
     if (!image.data) {
         ROS_WARN("Could not read image.");
@@ -219,7 +254,13 @@ void Micasense::publish_image(std::string image_path, unsigned int position) {
     } else {
         ROS_WARN("Invalid index of multispectral camera's channel.");
     }
-    if (this->show_timer) std::cout << "publishing: " << clock() - start << std::endl;
+    if (this->show_timer) {
+        // std::cout << "publishing: " << 
+        // std::chrono::high_resolution_clock::now() - start << std::endl;
+        auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::high_resolution_clock::now() - start);
+        std::cout << "publish: " << ms_int.count() << std::endl;
+    }
 }
 
 std::string Micasense::pos_to_channel_name(unsigned int position) {
