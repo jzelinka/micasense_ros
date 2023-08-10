@@ -135,11 +135,71 @@ bool Micasense::camera_capture() {
 
     request.setOpt(curlpp::options::WriteStream(&response));
 
-    std::string url = this->params.get_ip() + "/capture?block=true&store_capture=false&cache_raw=" + std::to_string(this->params.get_channel_bit_mask());
+    std::string url = this->params.get_ip() + "/capture?use_post_capture_state=true&store_capture=false&cache_raw=" + std::to_string(this->params.get_channel_bit_mask());
+    // std::string url = this->params.get_ip() + "/capture?use_post_capture_state=true&cache_raw=" + std::to_string(this->params.get_channel_bit_mask());
     std::cout << "url: " << url << std::endl;
 
     request.setOpt(curlpp::options::Url(url));
     request.perform();
+
+    std::cout << "response: " << response.str() << std::endl;
+    // get capture id
+    nlohmann::json json = nlohmann::json::parse(response.str());
+    std::string capture_id = json["id"].dump();
+    std::cout << "capture_id: " << capture_id << std::endl;
+
+    // set the time
+    url = this->params.get_ip() + "/capture_state";
+    std::cout << "url: " << url << std::endl;
+
+    std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
+
+    // Convert the time point to time_t
+    std::time_t currentTime_t = std::chrono::system_clock::to_time_t(currentTime);
+
+    // Convert time_t to a string
+    char buffer[80];
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%S.000000Z", std::localtime(&currentTime_t));
+    std::cout << "time: " << buffer << std::endl;
+    nlohmann::json data;
+    data["utc_time"] = buffer;
+    
+    ros::Duration(0.5).sleep();
+    std::list<std::string> header;
+    header.push_back("Content-Type: application/json");
+
+    request.setOpt(curlpp::options::Url(url));
+    request.setOpt(curlpp::options::HttpHeader(header));
+    request.setOpt(curlpp::options::PostFields(data.dump()));
+    request.setOpt(new curlpp::options::PostFieldSize(data.dump().length()));
+
+    response.str(std::string());
+    request.setOpt(curlpp::options::WriteStream(&response));
+    request.perform();
+    std::cout << "response: " << response.str() << std::endl;
+
+    // wait for the files to be captured
+
+    url = this->params.get_ip() + "/capture/" + capture_id.substr(1, capture_id.size() - 2);
+    bool capture_complete = false;
+    curlpp::Easy capture_request;
+    capture_request.setOpt(new curlpp::options::Url(url));
+
+    while (!capture_complete) {
+
+        response.str(std::string());
+        capture_request.setOpt(new curlpp::options::WriteStream(&response));
+        capture_request.perform();
+
+        nlohmann::json capture_status_json  = nlohmann::json::parse(response.str());
+        std::cout << capture_status_json << std::endl;
+
+        capture_complete = (capture_status_json["status"] == "complete");
+
+        if (!capture_complete) {
+            ros::Duration(0.1).sleep();
+        }
+    }
 
     this->response.str(std::string());
     this->response << response.str();

@@ -42,7 +42,7 @@ class Micasense {
         // image_transport::Publisher image_pub;
         std::stringstream response;
 
-        bool show_timer = true;
+        bool show_timer = false;
 
         std::vector<image_transport::Publisher> image_pubs = std::vector<image_transport::Publisher>(7);
         std::vector<std::string> image_paths = std::vector<std::string>(7);
