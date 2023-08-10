@@ -62,7 +62,7 @@ def visualize_overlay_band_alignment(cap: capture.Capture, vis_band_names, save_
     rgb_image = cv2.merge(bands)
 
     # Save the RGB image to a file
-    output_filename = save_path + "/aligned_overlay_" + cap.cap_name + "_" + "_".join(vis_band_names) + ".tif"
+    output_filename = save_path + "/aligned_overlay_" + cap.cap_name + "_" + "_".join(vis_band_names) + ".jpg"
     cv2.imwrite(output_filename, cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR))
 
 

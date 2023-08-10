@@ -13,6 +13,8 @@ struct MicasenseParams {
         bool use_near_infrared = true;
         bool use_panchromatic = true;
         bool use_thermal = true;
+        bool save_on_camera_card = false;
+        bool overwrite_timestamp = true;
 
     bool validate_ip_address(const std::string &ipAddress) {
         struct sockaddr_in sa;

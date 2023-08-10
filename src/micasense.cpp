@@ -54,7 +54,10 @@ MicasenseParams Micasense::load_params(ros::NodeHandle& nh, ros::NodeHandle& pnh
     pnh.getParam("use_near_infrared", params.use_near_infrared);
     pnh.getParam("use_panchromatic", params.use_panchromatic);
     pnh.getParam("use_thermal", params.use_thermal);
+    pnh.getParam("save_on_camera_card", params.save_on_camera_card);
+    pnh.getParam("overwrite_timestamp", params.overwrite_timestamp);
 
+    // setting the bitmask
     int tmp_bit_mask = 0;
     if (params.use_red) tmp_bit_mask |= 1 << 2;
     if (params.use_blue) tmp_bit_mask |= 1 << 0;
@@ -124,47 +127,27 @@ bool Micasense::parse_response() {
     return true;
 }
 
-bool Micasense::camera_capture() {
-    // capture and fill the http response to be parsed using some json library
+void Micasense::send_timestamp_for_capture() {
     curlpp::Cleanup cleanup;
     curlpp::Easy request;
 
-    std::stringstream response;
-
-    auto start = std::chrono::high_resolution_clock::now();
-
-    request.setOpt(curlpp::options::WriteStream(&response));
-
-    std::string url = this->params.get_ip() + "/capture?use_post_capture_state=true&store_capture=false&cache_raw=" + std::to_string(this->params.get_channel_bit_mask());
-    // std::string url = this->params.get_ip() + "/capture?use_post_capture_state=true&cache_raw=" + std::to_string(this->params.get_channel_bit_mask());
-    std::cout << "url: " << url << std::endl;
-
-    request.setOpt(curlpp::options::Url(url));
-    request.perform();
-
-    std::cout << "response: " << response.str() << std::endl;
-    // get capture id
-    nlohmann::json json = nlohmann::json::parse(response.str());
-    std::string capture_id = json["id"].dump();
-    std::cout << "capture_id: " << capture_id << std::endl;
-
     // set the time
-    url = this->params.get_ip() + "/capture_state";
-    std::cout << "url: " << url << std::endl;
+    std::string url = this->params.get_ip() + "/capture_state";
 
     std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
 
     // Convert the time point to time_t
     std::time_t currentTime_t = std::chrono::system_clock::to_time_t(currentTime);
+    this->capture_time = ros::Time::now();
 
     // Convert time_t to a string
     char buffer[80];
     std::strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%S.000000Z", std::localtime(&currentTime_t));
-    std::cout << "time: " << buffer << std::endl;
     nlohmann::json data;
     data["utc_time"] = buffer;
     
-    ros::Duration(0.5).sleep();
+    // need to wait for the camera to be ready
+    ros::Duration(0.4).sleep();
     std::list<std::string> header;
     header.push_back("Content-Type: application/json");
 
@@ -176,9 +159,33 @@ bool Micasense::camera_capture() {
     response.str(std::string());
     request.setOpt(curlpp::options::WriteStream(&response));
     request.perform();
-    std::cout << "response: " << response.str() << std::endl;
+}
 
-    // wait for the files to be captured
+bool Micasense::camera_capture() {
+    // capture and fill the http response to be parsed using some json library
+    curlpp::Cleanup cleanup;
+    curlpp::Easy request;
+
+    std::stringstream response;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    request.setOpt(curlpp::options::WriteStream(&response));
+
+    std::string store_capture_val = this->params.save_on_camera_card ? "true" : "false";
+    std::string url = this->params.get_ip() + "/capture?use_post_capture_state=true&store_capture=" + store_capture_val + "&cache_raw=" + std::to_string(this->params.get_channel_bit_mask());
+    std::cout << "url: " << url << std::endl;
+
+    request.setOpt(curlpp::options::Url(url));
+    request.perform();
+
+    // get capture id
+    nlohmann::json json = nlohmann::json::parse(response.str());
+    std::string capture_id = json["id"].dump();
+
+    if (this->params.overwrite_timestamp) {
+        this->send_timestamp_for_capture();
+    }
 
     url = this->params.get_ip() + "/capture/" + capture_id.substr(1, capture_id.size() - 2);
     bool capture_complete = false;
@@ -192,7 +199,6 @@ bool Micasense::camera_capture() {
         capture_request.perform();
 
         nlohmann::json capture_status_json  = nlohmann::json::parse(response.str());
-        std::cout << capture_status_json << std::endl;
 
         capture_complete = (capture_status_json["status"] == "complete");
 
@@ -201,8 +207,7 @@ bool Micasense::camera_capture() {
         }
     }
 
-    this->response.str(std::string());
-    this->response << response.str();
+    this->set_response(&response);
 
     if (this->show_timer) {
         auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -211,6 +216,11 @@ bool Micasense::camera_capture() {
     }
 
     return true;
+}
+
+void Micasense::set_response(std::stringstream* response) {
+    this->response.str(std::string());
+    this->response << response->str();
 }
 
 // bool Micasense::test_whole_process(std::string image_path) {
@@ -308,6 +318,7 @@ void Micasense::publish_image(std::string image_path, unsigned int position) {
     }
 
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
+    msg->header.stamp = this->capture_time;
 
     if (pos_valid(position)) {
         this->image_pubs[position].publish(msg);

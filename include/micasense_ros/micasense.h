@@ -41,6 +41,7 @@ class Micasense {
         ros::NodeHandle pnh;
         // image_transport::Publisher image_pub;
         std::stringstream response;
+        ros::Time capture_time;
 
         bool show_timer = false;
 
@@ -53,9 +54,11 @@ class Micasense {
         bool parse_response();
 
         void publish_image(std::string image_path, unsigned int position);
+        void set_response(std::stringstream* response);
         // bool test_whole_process(std::string image_path);
         std::string pos_to_channel_name(unsigned int position);
         bool pos_valid(unsigned int position);
+        void send_timestamp_for_capture();
 
         // TODO check the calibration
 };
