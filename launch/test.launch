@@ -1,8 +1,11 @@
 <launch>
     <!-- driver -->
     <node pkg="micasense_ros" type="micasense_node" name="micasense_node" output="screen">
+
+        <!-- set the IP adress 192.168.1.83 is the default for the ALTUM PT sensors -->
         <param name="ip" value="192.168.1.83" type="string"/>
-        <!-- <param name="channel_bit_mask" value="127" type="int"/> -->
+
+        <!-- set the bands that should be captured by the camera -->
         <param name="use_red" value="true" type="bool"/>
         <param name="use_blue" value="true" type="bool"/>
         <param name="use_green" value="true" type="bool"/>
@@ -10,9 +13,12 @@
         <param name="use_near_infrared" value="true" type="bool"/>
         <param name="use_panchromatic" value="true" type="bool"/>
         <param name="use_thermal" value="true" type="bool"/>
-    </node>
 
-    <!-- image view -->
-    <!-- ready to be tested with the driver i will create -->
-    <!-- <node pkg="rqt_image_view" type="rqt_image_view" name="image_view_debug" /> -->
+        <!-- set if time should be synchronized between the camera and the computer
+        if set to false timestamp will be received from gps -->
+        <param name="overwrite_timestamp" value="true" type="bool"/>
+
+        <!-- saves the images to the card of the camera as well -->
+        <param name="save_on_camera_card" value="false" type="bool"/>
+    </node>
 </launch>

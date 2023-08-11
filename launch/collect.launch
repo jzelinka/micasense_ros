@@ -1,8 +1,16 @@
 <launch>
-    <!-- driver -->
+    <!-- record images -->
     <node pkg="rosbag" type="record" name="rosbag_micasense" output="screen"
-        args="record -o /home/jz/output
+        args="record -o /home/jz/tmp/multispec
 /micasense/image_panchromatic/compressed
-        " />
+        " /> 
+    <!-- create images -->
+    <arg name="image_dir" value="" />
+    <node pkg="image_view" type="image_saver" name="image_saver">
+        <!-- <remap from="image" to="/camera/image_raw" /> -->
+        <param name="image_transport" value="compressed" />
+        <param name="save_all_image" value="all" />
+        <param name="filename_format" value="$(arg image_dir)/%04d.png" />
+    </node>
 
 </launch>
