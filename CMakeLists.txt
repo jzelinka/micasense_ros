@@ -105,10 +105,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES micasense_ros
-#  CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES micasense_ros
+  CATKIN_DEPENDS roscpp rospy std_msgs
+  DEPENDS system_lib
 )
 
 ###########
@@ -154,8 +154,8 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(micasense src/micasense.cpp src/micasense_node.cpp include/nlohman/json.hpp include/micasense_ros/micasense_params.h)
-target_link_libraries(micasense ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} -L/usr/local/lib -lcurl -lcurlpp)
+add_executable(micasense src/micasense.cpp src/micasense_node.cpp include/nlohmann/json.hpp include/micasense_ros/micasense_params.h)
+target_link_libraries(micasense ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} -I/usr/local/include -L/usr/local/lib -lcurl -lcurlpp)
 
 add_executable(micasense_node src/micasense_node.cpp src/micasense.cpp)
 target_link_libraries(micasense_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} -I/usr/local/include -L/usr/local/lib -lcurl -lcurlpp)
