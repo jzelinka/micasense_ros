@@ -1,0 +1,25 @@
+<launch>
+    <!-- camera -->
+		<include file="$(find flir_boson_usb)/launch/flir_boson.launch"/>
+
+    <!-- flir -->
+		<include file="$(find micasense_ros)/launch/micasense_handheld.launch"/>
+
+    <!-- record -->
+    <node pkg="rosbag" type="record" name="rosbag_micasense" output="screen"
+        args="record -o /home/crl/tmp/multispec -a
+				 			/micasense/image_blue/compressed
+				" /> 
+
+</launch>
+							<!-- 
+							/flir_boson/camera_info
+							/flir_boson/image_raw
+
+							/micasense/image_green/compressed
+							/micasense/image_near_infrared/compressed
+							/micasense/image_panchromatic/compressed
+							/micasense/image_red/compressed
+							/micasense/image_red_edge/compressed
+							/micasense/image_thermal/compressed
+							-->
