@@ -317,8 +317,9 @@ void Micasense::publish_image(std::string image_path, unsigned int position) {
         ROS_WARN("Could not read image.");
     }
 
-    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
+    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image).toImageMsg();
     msg->header.stamp = this->capture_time;
+    msg->encoding = "mono8";
 
     if (pos_valid(position)) {
         this->image_pubs[position].publish(msg);
