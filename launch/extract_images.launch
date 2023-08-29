@@ -1,0 +1,86 @@
+<launch>
+    <arg name="image_dir" default="/home/jz/datasets/multispec/extracted_imgs_longer"/>
+    <arg name="in_bagfile" default="/home/jz/datasets/multispec/bags/multispec_2023-08-24-15-42-47.bag"/>
+
+    <!-- create blue images -->
+    <node pkg="image_view" type="image_saver" name="image_saver_blue">
+        <remap from="image" to="/micasense/image_blue" />
+        <param name="image_transport" value="compressed" />
+        <param name="save_all_image" value="all" />
+        <param name="filename_format" value="$(arg image_dir)/IMG_%05d_1.png" />
+    </node>
+
+    <!-- create green images -->
+    <node pkg="image_view" type="image_saver" name="image_saver_green">
+        <remap from="image" to="/micasense/image_green" />
+        <param name="image_transport" value="compressed" />
+        <param name="save_all_image" value="all" />
+        <param name="filename_format" value="$(arg image_dir)/IMG_%05d_2.png" />
+    </node>
+
+    <!-- create red images -->
+    <node pkg="image_view" type="image_saver" name="image_saver_red">
+        <remap from="image" to="/micasense/image_red" />
+        <param name="image_transport" value="compressed" />
+        <param name="save_all_image" value="all" />
+        <param name="filename_format" value="$(arg image_dir)/IMG_%05d_3.png" />
+    </node>
+
+    <!-- create red_edge images -->
+    <node pkg="image_view" type="image_saver" name="image_saver_nir">
+        <remap from="image" to="/micasense/image_near_infrared" />
+        <param name="image_transport" value="compressed" />
+        <param name="save_all_image" value="all" />
+        <param name="filename_format" value="$(arg image_dir)/IMG_%05d_4.png" />
+    </node>
+
+    <!-- create near_ir images -->
+    <node pkg="image_view" type="image_saver" name="image_saver_red_edge">
+        <remap from="image" to="/micasense/image_red_edge" />
+        <param name="image_transport" value="compressed" />
+        <param name="save_all_image" value="all" />
+        <param name="filename_format" value="$(arg image_dir)/IMG_%05d_5.png" />
+    </node>
+
+    <!-- create panchromatic images -->
+    <node pkg="image_view" type="image_saver" name="image_saver_panchro">
+        <remap from="image" to="/micasense/image_panchromatic" />
+        <param name="image_transport" value="compressed" />
+        <param name="save_all_image" value="all" />
+        <param name="filename_format" value="$(arg image_dir)/IMG_%05d_6.png" />
+    </node>
+
+    <!-- create panchromatic images -->
+    <node pkg="image_view" type="image_saver" name="image_saver_altum_thermal">
+        <remap from="image" to="/micasense/image_thermal" />
+        <param name="image_transport" value="compressed" />
+        <param name="save_all_image" value="all" />
+        <param name="filename_format" value="$(arg image_dir)/IMG_%05d_7.png" />
+    </node>
+
+    <!-- create flir images -->
+    <node pkg="image_view" type="image_saver" name="image_saver_flir">
+        <remap from="image" to="/flir_boson/image_raw" />
+        <param name="image_transport" value="compressed" />
+        <param name="save_all_image" value="all" />
+        <param name="filename_format" value="$(arg image_dir)/IMG_%05d_8.png" />
+    </node>
+
+    <!--
+        /flir_boson/camera_info
+        /flir_boson/image_raw/compressed
+        /micasense/image_blue/compressed
+        /micasense/image_green/compressed
+        /micasense/image_near_infrared/compressed
+        /micasense/image_panchromatic/compressed
+        /micasense/image_red/compressed
+        /micasense/image_red_edge/compressed
+        /micasense/image_thermal/compressed
+        /pylon_camera_node/camera_info
+        /pylon_camera_node/image_raw/compressed
+    -->
+
+    <!-- play -->
+    <node pkg="rosbag" type="play" name="rosbag_player" args="$(arg in_bagfile) -r 3.0" required="true" output="screen">
+    </node>
+</launch>
