@@ -1,7 +1,7 @@
 <launch>
     <!-- record images -->
     <node pkg="rosbag" type="record" name="rosbag_micasense" output="screen"
-        args="record -o /home/jz/tmp/multispec
+        args="record -o /home/crl/tmp/multispec
 /micasense/image_panchromatic/compressed
         " /> 
     <!-- create images -->
