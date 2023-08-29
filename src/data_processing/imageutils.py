@@ -18,7 +18,12 @@ def align_capture(capture, ref_idx=0):
         if idx == ref_idx:
             warp_mats.append(None)
         else:
-            _, warp = cv2.findTransformECC(capture.images[ref_idx].image, img.image, init_warp, warp_mode, criteria)
+            try:
+                # TODO try to handle
+                _, warp = cv2.findTransformECC(capture.images[ref_idx].image, img.image, init_warp, warp_mode, criteria)
+            except:
+                print("unable to find warp")
+                warp = init_warp
             warp_mats.append(warp.copy())
 
     return warp_mats, ref_idx
