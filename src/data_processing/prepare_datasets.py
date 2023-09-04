@@ -23,10 +23,14 @@ if __name__=="__main__":
     capture_names = sorted(glob.glob(input_path + "/*1." + suffix))
     output_dir = pathlib.Path(args.output_path)
     output_dir.mkdir(parents=True, exist_ok=True)
+
     aligned_dir = output_dir.joinpath("picture")
     rgb_dir = output_dir.joinpath("rgb_for_labels")
+    compare_dir = output_dir.joinpath("compare")
+
     aligned_dir.mkdir(parents=True, exist_ok=True)
     rgb_dir.mkdir(parents=True, exist_ok=True)
+    compare_dir.mkdir(parents=True, exist_ok=True)
 
     for capture_name in capture_names:
         prefix = capture.get_prefix(capture_name)
@@ -39,3 +43,4 @@ if __name__=="__main__":
 
         visualize.save_all(capture_now, prefix="", save_path=str(aligned_dir))
         visualize.visualize_overlay_rgb(capture_now, save_plot=True, show_plot=False, prefix="", add_band_names=False, save_path=str(rgb_dir))
+        visualize.compare_overlay_rgb(capture_now, show_plot=False, save_plot=True, save_path=str(compare_dir))

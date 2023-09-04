@@ -18,7 +18,7 @@ def visualize_aligned(cap: capture.Capture, show_plot=True, save_plot=False, sav
     if show_plot:
         plt.show()
 
-def compare_band_alignment(cap: capture.Capture, vis_band_names, show_plot=True, save_plot=False, save_path="output"):
+def compare_band_alignment(cap: capture.Capture, vis_band_names, show_plot=True, save_plot=False, prefix="", save_path="output"):
     if len(vis_band_names) != 3:
         raise ValueError("Must visualize exactly 3 bands")
     
@@ -44,9 +44,11 @@ def compare_band_alignment(cap: capture.Capture, vis_band_names, show_plot=True,
     axes[1].imshow(res)
 
     if save_plot:
+        output_fname = save_path + "/" + prefix + cap.cap_name + title + "_overlay_comparison.png"
         if not os.path.isdir(save_path):
             os.makedirs(save_path)
-        plt.savefig(os.path.join(save_path, title + "_overlay_comparison.pdf"), dpi=300)
+        print("Saving to", output_fname)
+        plt.savefig(output_fname, dpi=300)
     if show_plot:
         plt.show()
 
@@ -77,11 +79,11 @@ def save_all(cap: capture.Capture, prefix="aligned_", save_path="output"):
         print("Saved " + prefix + cap.images[idx].fname)
 
 
-def compare_overlay_rgb(cap: capture.Capture, show_plot=True, save_plot=False, save_path="output"):
+def compare_overlay_rgb(cap: capture.Capture, show_plot=True, save_plot=False, prefix="", save_path="output"):
     if not cap.is_rgb():
         raise ValueError("Capture must be rgb to visualize this overlay")
 
-    compare_band_alignment(cap, ["red", "green", "blue"], show_plot, save_plot, save_path)
+    compare_band_alignment(cap, ["red", "green", "blue"], show_plot=show_plot, save_plot=save_plot, prefix="", save_path=save_path)
 
 def visualize_overlay_rgb(cap: capture.Capture, show_plot=True, save_plot=False, prefix="", add_band_names=True, save_path="output"):
     if not cap.is_rgb():
