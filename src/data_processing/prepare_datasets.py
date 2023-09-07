@@ -3,6 +3,17 @@ import glob
 import pathlib
 import visualize
 import argparse
+import multiprocessing
+
+MULTIPROCESS = False
+
+def register_image(fname_list):
+    print(file_list)
+    capture_now = capture.Capture.from_file_list(fname_list)
+
+    visualize.save_all(capture_now, prefix="", save_path=str(aligned_dir))
+    visualize.visualize_overlay_rgb(capture_now, save_plot=True, show_plot=False, prefix="", add_band_names=False, save_path=str(rgb_dir))
+    visualize.compare_overlay_rgb(capture_now, show_plot=False, save_plot=True, save_path=str(compare_dir))
 
 if __name__=="__main__":
     argparse = argparse.ArgumentParser()
@@ -32,15 +43,23 @@ if __name__=="__main__":
     rgb_dir.mkdir(parents=True, exist_ok=True)
     compare_dir.mkdir(parents=True, exist_ok=True)
 
+    file_list = []
     for capture_name in capture_names:
         prefix = capture.get_prefix(capture_name)
 
         files = sorted(glob.glob(prefix + "*." + suffix))[:args.n]
 
         assert len(files) == args.n
+        file_list.append(files)
+    # create file lists
+    print(len(file_list))
+    if MULTIPROCESS:
+        with multiprocessing.Pool() as pool:
+            pool.map(register_image, file_list)
+    else:
+        for files in file_list:
+            capture_now = capture.Capture.from_file_list(files)
 
-        capture_now = capture.Capture.from_file_list(files)
-
-        visualize.save_all(capture_now, prefix="", save_path=str(aligned_dir))
-        visualize.visualize_overlay_rgb(capture_now, save_plot=True, show_plot=False, prefix="", add_band_names=False, save_path=str(rgb_dir))
-        visualize.compare_overlay_rgb(capture_now, show_plot=False, save_plot=True, save_path=str(compare_dir))
+            visualize.save_all(capture_now, prefix="", save_path=str(aligned_dir))
+            visualize.visualize_overlay_rgb(capture_now, save_plot=True, show_plot=False, prefix="", add_band_names=False, save_path=str(rgb_dir))
+            visualize.compare_overlay_rgb(capture_now, show_plot=False, save_plot=True, save_path=str(compare_dir))
