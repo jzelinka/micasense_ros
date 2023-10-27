@@ -280,7 +280,7 @@ void Micasense::publish_image(std::string image_path, unsigned int position) {
         return;
     }
 
-    std::string tmp_response_file = "/tmp/response.tif";
+    std::string tmp_response_file = "/tmp/tmp.tif";
 
     auto start = std::chrono::high_resolution_clock::now();
     // std::chrono::duration<std::chrono::milliseconds> ms_int;
@@ -304,7 +304,7 @@ void Micasense::publish_image(std::string image_path, unsigned int position) {
     if (this->show_timer) start = std::chrono::high_resolution_clock::now();
 
 
-    cv::Mat image = cv::imread(tmp_response_file, cv::IMREAD_COLOR);
+    cv::Mat image = cv::imread(tmp_response_file);
     if (this->show_timer) {
         // std::cout << "imdecode: " << std::chrono::high_resolution_clock::now() - start << std::endl;
         auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -317,9 +317,9 @@ void Micasense::publish_image(std::string image_path, unsigned int position) {
         ROS_WARN("Could not read image.");
     }
 
-    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image).toImageMsg();
+    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
     msg->header.stamp = this->capture_time;
-    msg->encoding = "mono8";
+    msg->encoding = "bgr8";
 
     if (pos_valid(position)) {
         this->image_pubs[position].publish(msg);

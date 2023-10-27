@@ -1,7 +1,7 @@
 import cv2
-import capture
+import data_processing.capture
 import numpy as np
-import image
+import data_processing.image
 
 def align_capture(capture, ref_idx=0):
     warp_mats = []

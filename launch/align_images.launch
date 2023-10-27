@@ -1,0 +1,14 @@
+<launch>
+
+  <group ns="micasense">
+  	
+    <node pkg="image_transport" type="republish" name="decompress_red" args="compressed in:=image_red raw out:=image_red" />
+    <node pkg="image_transport" type="republish" name="decompress_red_edge" args="compressed in:=image_red_edge raw out:=image_red_edge" />
+    <node pkg="image_transport" type="republish" name="decompress_near_infrared" args="compressed in:=image_near_infrared raw out:=image_near_infrared" />
+
+		<node pkg="micasense_ros" name="asdfasfd" type="micasense_aligner.py" output="screen"/>
+
+  </group>
+
+</launch>
+

@@ -1,5 +1,5 @@
-import imageutils
-import image
+import data_processing.imageutils as imageutils
+import data_processing.image as image
 
 import cv2
 import numpy as np
@@ -20,7 +20,6 @@ class Capture:
 
         self.cap_name = get_prefix(self.images[0].fname)
 
-        print("Aligning images")
         warp_mats, self.ref_idx = imageutils.align_capture(self)
         self.warp_mats = warp_mats
 
@@ -69,7 +68,6 @@ class Capture:
         for idx, img in enumerate(self.aligned_images):
             self.aligned_images[idx] = img[y:y+h, x:x + w]
             self.aligned_images[idx] = cv2.resize(self.aligned_images[idx], target_shape[::-1])
-            print(self.aligned_images[idx].shape)
 
 def get_prefix(fname):
     return "_".join(fname.split("_")[:-1])
